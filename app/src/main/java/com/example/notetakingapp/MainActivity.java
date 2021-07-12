@@ -1,23 +1,63 @@
 package com.example.notetakingapp;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    public static final int ADD_NOTE_REQUEST = 1;
     private NoteViewModel noteViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FloatingActionButton fab = findViewById(R.id.button_add_note);
+
+        ActivityResultLauncher<Intent> launcher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == ADD_NOTE_REQUEST) {
+                            Intent data = result.getData();
+                            String title = data.getStringExtra(AddNoteActivity.EXTRA_TITLE);
+                            String description = data.getStringExtra(AddNoteActivity.EXTRA_DESCRIPTION);
+                            int priority = data.getIntExtra(AddNoteActivity.EXTRA_PRIORITY,1);
+
+                            Note note = new Note(title, description, priority);
+                            noteViewModel.insert(note);
+                            Toast.makeText(MainActivity.this, "Note saved", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Note not saved", Toast.LENGTH_SHORT).show();
+                        }
+                    }});
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, AddNoteActivity.class);
+                launcher.launch(intent);
+
+            }
+        });
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
