@@ -38,4 +38,14 @@ public class Note {
     public int getPriority() {
         return priority;
     }
+
+    @Override
+    public String toString() {
+        return "Note{" +
+                "ID=" + ID +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", priority=" + priority +
+                '}';
+    }
 }
